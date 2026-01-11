@@ -42,29 +42,42 @@ export async function POST(request: NextRequest) {
       const dailyDoc = await transaction.get(dailyRef);
 
       // ===== PHASE 2: ALL WRITES AFTER =====
-      // Create aggregators if they don't exist
-      if (!statsDoc.exists) {
-        transaction.set(statsRef, { totalPageviews: 0, tiktokVisits: 0, clicks: {} });
-      }
-      
-      if (!dailyDoc.exists) {
-        transaction.set(dailyRef, { pageviews: 0 });
-      }
-
-      // Prepare updates
       const increment = (n: number) => FieldValue.increment(n);
       
-      if (type === 'pageview') {
-        transaction.update(statsRef, { totalPageviews: increment(1) });
-        transaction.update(dailyRef, { pageviews: increment(1) });
-
-        // Track TikTok source
-        if (event.referrer.toLowerCase().includes('tiktok')) {
-          transaction.update(statsRef, { tiktokVisits: increment(1) });
+      // Handle stats document
+      if (!statsDoc.exists) {
+        // Create with initial values
+        const initialStats: any = {
+          totalPageviews: type === 'pageview' ? 1 : 0,
+          tiktokVisits: (type === 'pageview' && event.referrer.toLowerCase().includes('tiktok')) ? 1 : 0,
+          clicks: {}
+        };
+        
+        if (type === 'click' && component) {
+          initialStats.clicks[component] = 1;
         }
-      } else if (type === 'click' && component) {
-        // Nested field update for clicks
-        transaction.update(statsRef, { [`clicks.${component}`]: increment(1) });
+        
+        transaction.set(statsRef, initialStats);
+      } else {
+        // Document exists, update it
+        if (type === 'pageview') {
+          transaction.update(statsRef, { totalPageviews: increment(1) });
+          
+          if (event.referrer.toLowerCase().includes('tiktok')) {
+            transaction.update(statsRef, { tiktokVisits: increment(1) });
+          }
+        } else if (type === 'click' && component) {
+          transaction.update(statsRef, { [`clicks.${component}`]: increment(1) });
+        }
+      }
+      
+      // Handle daily document
+      if (!dailyDoc.exists) {
+        transaction.set(dailyRef, { pageviews: type === 'pageview' ? 1 : 0 });
+      } else {
+        if (type === 'pageview') {
+          transaction.update(dailyRef, { pageviews: increment(1) });
+        }
       }
 
       // Perform the raw insert
