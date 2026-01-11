@@ -1,3 +1,4 @@
+// Pricing: R$ 17,00 monthly / R$ 47,00 yearly
 export const config = {
   name: "Gustavo Sextaro",
   avatarId: "avatar",
