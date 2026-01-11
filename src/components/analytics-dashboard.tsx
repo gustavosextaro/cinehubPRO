@@ -16,15 +16,30 @@ interface AnalyticsData {
 export function AnalyticsDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
       try {
         const response = await fetch('/api/analytics');
+        
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.status}`);
+        }
+        
         const json = await response.json();
-        setData(json);
+        
+        // Validate that we got proper data structure
+        if (json && typeof json === 'object') {
+          setData(json);
+          setError(null);
+        } else {
+          throw new Error('Invalid data format');
+        }
       } catch (error) {
         console.error('Failed to fetch analytics:', error);
+        setError(error instanceof Error ? error.message : 'Unknown error');
+        setData(null);
       } finally {
         setLoading(false);
       }
@@ -46,19 +61,36 @@ export function AnalyticsDashboard() {
     );
   }
 
-  if (!data) {
+  if (error || !data) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-destructive">Erro ao carregar métricas</div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+        <Card className="max-w-md border-destructive/50">
+          <CardHeader>
+            <CardTitle className="text-destructive flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Erro ao Carregar Métricas
+            </CardTitle>
+            <CardDescription>
+              {error === 'API Error: 500' 
+                ? 'O banco de dados atingiu o limite de uso gratuito. As métricas voltarão amanhã automaticamente.' 
+                : 'Não foi possível carregar os dados do Analytics. Tente novamente mais tarde.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Detalhes técnicos: {error || 'Dados inválidos'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  const clicksArray = Object.entries(data.clicksByComponent)
+  const clicksArray = Object.entries(data.clicksByComponent || {})
     .map(([component, clicks]) => ({ component, clicks }))
     .sort((a, b) => b.clicks - a.clicks);
 
-  const referrersArray = Object.entries(data.referrers)
+  const referrersArray = Object.entries(data.referrers || {})
     .map(([referrer, count]) => ({ referrer, count }))
     .sort((a, b) => b.count - a.count);
 
