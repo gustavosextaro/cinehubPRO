@@ -3,7 +3,7 @@
     {
       "id": "avatar",
       "description": "User avatar",
-      "imageUrl": "/profile-avatar.jpg",
+      "imageUrl": "/avatar.png",
       "imageHint": "woman portrait"
     }
   ]

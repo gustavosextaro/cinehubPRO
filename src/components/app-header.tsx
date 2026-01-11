@@ -16,14 +16,12 @@ export function AppHeader() {
             fill
             sizes="96px"
             quality={100}
+            priority
+            unoptimized
             style={{
               objectFit: 'cover',
-              transform: 'scale(1.1)',
-              objectPosition: '50% 30%',
-              filter: 'contrast(1.1) brightness(1.05)',
             }}
             data-ai-hint={avatarImage.imageHint}
-            priority
           />
         ) : (
           <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground">
