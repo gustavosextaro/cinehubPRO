@@ -16,51 +16,53 @@ function getDateString() {
 
 async function getAnalyticsData() {
   try {
-    console.log('🔍 [Admin Page] Fetching analytics from aggregates (optimized)...');
+    console.log('🔍 [Admin Page] Fetching analytics from all events...');
     
-    const date = getDateString();
+    // Read all analytics events directly
+    const analyticsSnapshot = await db.collection('analytics').get();
+    console.log('📊 [Admin Page] Found', analyticsSnapshot.size, 'analytics events');
     
-    // OPTIMIZED: Only read 2 documents instead of all events!
-    const [statsDoc, dailyDoc] = await Promise.all([
-      db.collection('aggregates').doc('stats').get(),
-      db.collection('aggregates').doc(`daily_${date}`).get(),
-    ]);
+    // Process events
+    let totalPageviews = 0;
+    let todayPageviews = 0;
+    let tiktokVisits = 0;
+    const clicksByComponent: Record<string, number> = {};
+    const today = getDateString();
     
-    console.log('📊 [Admin Page] Read only 2 documents (stats + daily)');
-    console.log('   Stats exists:', statsDoc.exists);
-    console.log('   Daily exists:', dailyDoc.exists);
+    analyticsSnapshot.forEach((doc) => {
+      const data = doc.data();
+      const eventDate = new Date(data.timestamp).toISOString().split('T')[0];
+      
+      if (data.type === 'pageview') {
+        totalPageviews++;
+        if (eventDate === today) {
+          todayPageviews++;
+        }
+        
+        // Check if from TikTok
+        const referrer = (data.referrer || '').toLowerCase();
+        if (referrer.includes('tiktok')) {
+          tiktokVisits++;
+        }
+      } else if (data.type === 'click' && data.componentName) {
+        clicksByComponent[data.componentName] = (clicksByComponent[data.componentName] || 0) + 1;
+      }
+    });
     
-    if (!statsDoc.exists) {
-      console.log('⚠️  [Admin Page] No stats yet, returning zeros');
-      return {
-        totalPageviews: 0,
-        todayPageviews: 0,
-        weekPageviews: 0,
-        clicksByComponent: {},
-        referrers: {},
-        tiktokPercentage: 0,
-      };
-    }
-    
-    const data = statsDoc.data() || {};
-    const dailyData = dailyDoc.data() || { pageviews: 0 };
-    
-    const totalPageviews = data.totalPageviews || 0;
-    const tiktokVisits = data.tiktokVisits || 0;
     const tiktokPercentage = totalPageviews > 0 
       ? Math.round((tiktokVisits / totalPageviews) * 100) 
       : 0;
     
     const result = {
       totalPageviews,
-      todayPageviews: dailyData.pageviews || 0,
-      weekPageviews: 0, // Can be calculated if needed
-      clicksByComponent: data.clicks || {},
-      referrers: {}, // Simplified
+      todayPageviews,
+      weekPageviews: 0,
+      clicksByComponent,
+      referrers: {},
       tiktokPercentage,
     };
     
-    console.log('✅ [Admin Page] Analytics loaded efficiently');
+    console.log('✅ [Admin Page] Analytics processed successfully');
     console.log('   Total Pageviews:', result.totalPageviews);
     console.log('   Today:', result.todayPageviews);
     console.log('   TikTok %:', result.tiktokPercentage);
