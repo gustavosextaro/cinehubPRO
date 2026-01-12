@@ -1,4 +1,4 @@
-import { db } from '@/lib/firebase-admin';
+import { db } from '../../../lib/firebase-admin';
 import { NextRequest } from 'next/server';
 
 // Secret key to protect this endpoint

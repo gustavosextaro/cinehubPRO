@@ -1,4 +1,4 @@
-import { db } from '@/lib/firebase-admin';
+import { db } from '../../../lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { NextRequest } from 'next/server';
 

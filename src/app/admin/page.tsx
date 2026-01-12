@@ -1,5 +1,5 @@
-import { AnalyticsDashboard } from '@/components/analytics-dashboard';
-import { db } from '@/lib/firebase-admin';
+import { AnalyticsDashboard } from '../../components/analytics-dashboard';
+import { db } from '../../lib/firebase-admin';
 
 export const metadata = {
   title: 'Admin Analytics | CineHub',

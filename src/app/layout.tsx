@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "../components/ui/toaster";
 
 const appName = "Cinema Hub";
 const appDescription = "Cinema todo dia. Lista com +3.000 filmes. Assista, avalie e descubra.";
