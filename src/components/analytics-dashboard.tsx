@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Activity, MousePointerClick, TrendingUp, Users, BarChart3, ExternalLink } from 'lucide-react';
 
 interface AnalyticsData {
