@@ -25,9 +25,16 @@ async function getAnalyticsData() {
     // Process events
     let totalPageviews = 0;
     let todayPageviews = 0;
+    let weekPageviews = 0;
     let tiktokVisits = 0;
     const clicksByComponent: Record<string, number> = {};
+    const referrers: Record<string, number> = {};
     const today = getDateString();
+    
+    // Calculate date 7 days ago
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const sevenDaysAgoString = sevenDaysAgo.toISOString().split('T')[0];
     
     analyticsSnapshot.forEach((doc) => {
       const data = doc.data();
@@ -39,8 +46,33 @@ async function getAnalyticsData() {
           todayPageviews++;
         }
         
-        // Check if from TikTok
-        const referrer = (data.referrer || '').toLowerCase();
+        // Count pageviews from last 7 days
+        if (eventDate >= sevenDaysAgoString) {
+          weekPageviews++;
+        }
+        
+        // Track all referrers
+        const referrer = (data.referrer || '').toLowerCase().trim();
+        if (referrer && referrer !== '' && referrer !== 'direct') {
+          // Extract domain from URL if it's a full URL
+          let source = referrer;
+          try {
+            if (referrer.startsWith('http')) {
+              const url = new URL(referrer);
+              source = url.hostname.replace('www.', '');
+            }
+          } catch {
+            // If not a valid URL, keep original referrer
+          }
+          
+          // Aggregate by source
+          referrers[source] = (referrers[source] || 0) + 1;
+        } else {
+          // Track direct visits
+          referrers['Direto'] = (referrers['Direto'] || 0) + 1;
+        }
+        
+        // Check if from TikTok for percentage calculation
         if (referrer.includes('tiktok')) {
           tiktokVisits++;
         }
@@ -56,15 +88,16 @@ async function getAnalyticsData() {
     const result = {
       totalPageviews,
       todayPageviews,
-      weekPageviews: 0,
+      weekPageviews,
       clicksByComponent,
-      referrers: {},
+      referrers,
       tiktokPercentage,
     };
     
     console.log('✅ [Admin Page] Analytics processed successfully');
     console.log('   Total Pageviews:', result.totalPageviews);
     console.log('   Today:', result.todayPageviews);
+    console.log('   This Week:', result.weekPageviews);
     console.log('   TikTok %:', result.tiktokPercentage);
     
     return result;
