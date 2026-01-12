@@ -44,17 +44,45 @@ export async function POST(request: NextRequest) {
       // ===== PHASE 2: ALL WRITES AFTER =====
       const increment = (n: number) => FieldValue.increment(n);
       
+      // Extract referrer source for tracking
+      const getReferrerSource = (referrer: string): string => {
+        if (!referrer || referrer === 'Direct') return 'Direct';
+        const lower = referrer.toLowerCase();
+        if (lower.includes('tiktok')) return 'TikTok';
+        if (lower.includes('instagram')) return 'Instagram';
+        if (lower.includes('facebook')) return 'Facebook';
+        if (lower.includes('twitter') || lower.includes('x.com')) return 'Twitter';
+        if (lower.includes('youtube')) return 'YouTube';
+        if (lower.includes('google')) return 'Google';
+        if (lower.includes('whatsapp')) return 'WhatsApp';
+        
+        // Extract domain from URL
+        try {
+          const url = new URL(referrer);
+          return url.hostname.replace('www.', '');
+        } catch {
+          return 'Web';
+        }
+      };
+      
+      const referrerSource = getReferrerSource(event.referrer);
+      
       // Handle stats document
       if (!statsDoc.exists) {
         // Create with initial values
         const initialStats: any = {
           totalPageviews: type === 'pageview' ? 1 : 0,
-          tiktokVisits: (type === 'pageview' && event.referrer.toLowerCase().includes('tiktok')) ? 1 : 0,
-          clicks: {}
+          tiktokVisits: (type === 'pageview' && referrerSource === 'TikTok') ? 1 : 0,
+          clicks: {},
+          referrers: {}
         };
         
         if (type === 'click' && component) {
           initialStats.clicks[component] = 1;
+        }
+        
+        if (type === 'pageview') {
+          initialStats.referrers[referrerSource] = 1;
         }
         
         transaction.set(statsRef, initialStats);
@@ -63,9 +91,12 @@ export async function POST(request: NextRequest) {
         if (type === 'pageview') {
           transaction.update(statsRef, { totalPageviews: increment(1) });
           
-          if (event.referrer.toLowerCase().includes('tiktok')) {
+          if (referrerSource === 'TikTok') {
             transaction.update(statsRef, { tiktokVisits: increment(1) });
           }
+          
+          // Track referrer source
+          transaction.update(statsRef, { [`referrers.${referrerSource}`]: increment(1) });
         } else if (type === 'click' && component) {
           transaction.update(statsRef, { [`clicks.${component}`]: increment(1) });
         }
@@ -122,7 +153,7 @@ export async function GET() {
       todayPageviews: dailyData.pageviews || 0,
       weekPageviews: 0, // Simplified for performance (can be re-added later with weekly aggregators)
       clicksByComponent: data.clicks || {},
-      referrers: {}, // Simplified
+      referrers: data.referrers || {}, // Now returns real referrer data
       tiktokPercentage,
     });
   } catch (error) {
