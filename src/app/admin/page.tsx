@@ -1,10 +1,89 @@
 import { AnalyticsDashboard } from '@/components/analytics-dashboard';
+import { db } from '@/lib/firebase-admin';
 
 export const metadata = {
   title: 'Admin Analytics | CineHub',
   description: 'Painel de métricas e analytics do CineHub',
 };
 
-export default function AdminPage() {
-  return <AnalyticsDashboard />;
+// Disable caching to always get fresh data
+export const revalidate = 0;
+
+// Helper to get date string YYYY-MM-DD
+function getDateString() {
+  return new Date().toISOString().split('T')[0];
+}
+
+async function getAnalyticsData() {
+  try {
+    console.log('🔍 [Admin Page] Fetching analytics from aggregates (optimized)...');
+    
+    const date = getDateString();
+    
+    // OPTIMIZED: Only read 2 documents instead of all events!
+    const [statsDoc, dailyDoc] = await Promise.all([
+      db.collection('aggregates').doc('stats').get(),
+      db.collection('aggregates').doc(`daily_${date}`).get(),
+    ]);
+    
+    console.log('📊 [Admin Page] Read only 2 documents (stats + daily)');
+    console.log('   Stats exists:', statsDoc.exists);
+    console.log('   Daily exists:', dailyDoc.exists);
+    
+    if (!statsDoc.exists) {
+      console.log('⚠️  [Admin Page] No stats yet, returning zeros');
+      return {
+        totalPageviews: 0,
+        todayPageviews: 0,
+        weekPageviews: 0,
+        clicksByComponent: {},
+        referrers: {},
+        tiktokPercentage: 0,
+      };
+    }
+    
+    const data = statsDoc.data() || {};
+    const dailyData = dailyDoc.data() || { pageviews: 0 };
+    
+    const totalPageviews = data.totalPageviews || 0;
+    const tiktokVisits = data.tiktokVisits || 0;
+    const tiktokPercentage = totalPageviews > 0 
+      ? Math.round((tiktokVisits / totalPageviews) * 100) 
+      : 0;
+    
+    const result = {
+      totalPageviews,
+      todayPageviews: dailyData.pageviews || 0,
+      weekPageviews: 0, // Can be calculated if needed
+      clicksByComponent: data.clicks || {},
+      referrers: {}, // Simplified
+      tiktokPercentage,
+    };
+    
+    console.log('✅ [Admin Page] Analytics loaded efficiently');
+    console.log('   Total Pageviews:', result.totalPageviews);
+    console.log('   Today:', result.todayPageviews);
+    console.log('   TikTok %:', result.tiktokPercentage);
+    
+    return result;
+  } catch (error: any) {
+    console.error('❌ [Admin Page] Error fetching analytics:', error?.message);
+    console.error('   Error code:', error?.code);
+    
+    // Return empty data on error
+    return {
+      totalPageviews: 0,
+      todayPageviews: 0,
+      weekPageviews: 0,
+      clicksByComponent: {},
+      referrers: {},
+      tiktokPercentage: 0,
+    };
+  }
+}
+
+export default async function AdminPage() {
+  const data = await getAnalyticsData();
+  
+  return <AnalyticsDashboard initialData={data} />;
 }

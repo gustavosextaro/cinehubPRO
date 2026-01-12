@@ -13,17 +13,27 @@ interface AnalyticsData {
   tiktokPercentage: number;
 }
 
-export function AnalyticsDashboard() {
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
+interface AnalyticsDashboardProps {
+  initialData?: AnalyticsData;
+}
+
+export function AnalyticsDashboard({ initialData }: AnalyticsDashboardProps) {
+  const [data, setData] = useState<AnalyticsData | null>(initialData || null);
+  const [loading, setLoading] = useState(!initialData);
 
   useEffect(() => {
+    // If we got initial data, we're done loading
+    if (initialData) {
+      setLoading(false);
+      return;
+    }
+
+    // Fallback: fetch from API if no initial data provided
     async function fetchData() {
       try {
         const response = await fetch('/api/analytics');
         
         if (!response.ok) {
-          // If API fails, use zero values instead of showing error
           setData({
             totalPageviews: 0,
             todayPageviews: 0,
@@ -37,11 +47,9 @@ export function AnalyticsDashboard() {
         
         const json = await response.json();
         
-        // Validate that we got proper data structure
         if (json && typeof json === 'object') {
           setData(json);
         } else {
-          // Fallback to zeros
           setData({
             totalPageviews: 0,
             todayPageviews: 0,
@@ -53,7 +61,6 @@ export function AnalyticsDashboard() {
         }
       } catch (error) {
         console.error('Failed to fetch analytics:', error);
-        // On any error, show zeros instead of crashing
         setData({
           totalPageviews: 0,
           todayPageviews: 0,
@@ -68,9 +75,7 @@ export function AnalyticsDashboard() {
     }
 
     fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [initialData]);
 
   if (loading) {
     return (
