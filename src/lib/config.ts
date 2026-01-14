@@ -16,7 +16,7 @@ export const config = {
   
   socials: {
     tiktok: "COLE_AQUI_O_LINK_DO_TIKTOK",
-    instagram: "https://www.instagram.com/eugustavosextaro",
+    instagram: "https://www.instagram.com/cinehubpro/",
     email: "COLE_AQUI_O_EMAIL",
   },
 

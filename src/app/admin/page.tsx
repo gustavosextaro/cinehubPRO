@@ -77,7 +77,10 @@ async function getAnalyticsData() {
           tiktokVisits++;
         }
       } else if (data.type === 'click' && data.componentName) {
-        clicksByComponent[data.componentName] = (clicksByComponent[data.componentName] || 0) + 1;
+        // Count only TODAY's clicks for real-time 24h view
+        if (eventDate === today) {
+          clicksByComponent[data.componentName] = (clicksByComponent[data.componentName] || 0) + 1;
+        }
       }
     });
     

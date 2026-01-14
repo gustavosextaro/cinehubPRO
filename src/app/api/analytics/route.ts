@@ -97,17 +97,29 @@ export async function POST(request: NextRequest) {
           
           // Track referrer source
           transaction.update(statsRef, { [`referrers.${referrerSource}`]: increment(1) });
-        } else if (type === 'click' && component) {
-          transaction.update(statsRef, { [`clicks.${component}`]: increment(1) });
         }
+        // Note: clicks are now stored in daily documents only, not in global stats
       }
       
       // Handle daily document
       if (!dailyDoc.exists) {
-        transaction.set(dailyRef, { pageviews: type === 'pageview' ? 1 : 0 });
+        const initialDaily: any = {
+          pageviews: type === 'pageview' ? 1 : 0,
+          clicks: {}
+        };
+        
+        if (type === 'click' && component) {
+          initialDaily.clicks[component] = 1;
+        }
+        
+        transaction.set(dailyRef, initialDaily);
       } else {
         if (type === 'pageview') {
           transaction.update(dailyRef, { pageviews: increment(1) });
+        }
+        
+        if (type === 'click' && component) {
+          transaction.update(dailyRef, { [`clicks.${component}`]: increment(1) });
         }
       }
 
@@ -152,7 +164,7 @@ export async function GET() {
       totalPageviews,
       todayPageviews: dailyData.pageviews || 0,
       weekPageviews: 0, // Simplified for performance (can be re-added later with weekly aggregators)
-      clicksByComponent: data.clicks || {},
+      clicksByComponent: dailyData.clicks || {}, // Clicks from TODAY only (resets daily)
       referrers: data.referrers || {}, // Now returns real referrer data
       tiktokPercentage,
     });
