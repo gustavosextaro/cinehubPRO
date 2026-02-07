@@ -305,7 +305,7 @@ export function AnalyticsDashboard({ initialData }: AnalyticsDashboardProps) {
 
 function formatComponentName(component: string): string {
   const names: Record<string, string> = {
-    'abrir-planilha': 'Acessar Drive',
+    'abrir-planilha': 'Acessar Streaming',
     'link-letterboxd-modal': 'Link Letterboxd (Modal)',
     'footer-instagram': 'Instagram (Footer)',
     'footer-contato': 'WhatsApp Contato (Footer)',

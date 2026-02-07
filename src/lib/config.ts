@@ -5,7 +5,7 @@ export const config = {
   bio: "Apaixonado por cinema.",
   
   links: {
-    spreadsheet: "PLANILHA_URL",
+    spreadsheet: "https://streamingcinehub.vercel.app/",
     payment_monthly: "https://pay.hub.la/h01wOlP6z0RH8KLSrf6N",
     payment_yearly: "https://pay.hub.la/hwYNDJGovajWZ0mXqGTk",
     letterboxd: "https://letterboxd.com/ghust4_/",
@@ -22,10 +22,10 @@ export const config = {
 
   cards: {
     spreadsheet: {
-      title: "Drive com +2.000 filmes",
-      description: "Minha lista totalmente organizada para você ir direto no que procura ou descobrir algo novo.",
-      buttonText: "Acessar Drive",
-      note: "Atualizada frequentemente (10 filmes por semana)",
+      title: "Meu streaming com +2.000 filmes",
+      description: "O CineHub é o último streaming que você vai precisar assinar na sua vida!",
+      buttonText: "Acessar Streaming",
+      note: "Atualizado frequentemente (10 filmes por semana)",
     },
     letterboxd: {
       title: "Meu Letterboxd",
