@@ -1,9 +1,9 @@
-import { AnalyticsDashboard } from '../../components/analytics-dashboard';
-import { db } from '../../lib/db';
+﻿import { AnalyticsDashboard } from '@/components/analytics-dashboard';
+import { db } from '@/lib/firebase-admin';
 
 export const metadata = {
   title: 'Admin Analytics | CineHub',
-  description: 'Painel de métricas e analytics do CineHub',
+  description: 'Painel de m├®tricas e analytics do CineHub',
 };
 
 // Disable caching to always get fresh data
@@ -16,7 +16,7 @@ function getDateString() {
 
 async function getAnalyticsData() {
   try {
-    console.log('🔍 [Admin Page] Fetching analytics from aggregates (optimized)...');
+    console.log('­ƒöì [Admin Page] Fetching analytics from aggregates (optimized)...');
     
     const date = getDateString();
     
@@ -26,12 +26,12 @@ async function getAnalyticsData() {
       db.collection('aggregates').doc(`daily_${date}`).get(),
     ]);
     
-    console.log('📊 [Admin Page] Read only 2 documents (stats + daily)');
+    console.log('­ƒôè [Admin Page] Read only 2 documents (stats + daily)');
     console.log('   Stats exists:', statsDoc.exists);
     console.log('   Daily exists:', dailyDoc.exists);
     
     if (!statsDoc.exists) {
-      console.log('⚠️  [Admin Page] No stats yet, returning zeros');
+      console.log('ÔÜá´©Å  [Admin Page] No stats yet, returning zeros');
       return {
         totalPageviews: 0,
         todayPageviews: 0,
@@ -43,7 +43,7 @@ async function getAnalyticsData() {
     }
     
     const data = statsDoc.data() || {};
-    const dailyData = dailyDoc.data() || { pageviews: 0, clicks: {} };
+    const dailyData = dailyDoc.data() || { pageviews: 0 };
     
     const totalPageviews = data.totalPageviews || 0;
     const tiktokVisits = data.tiktokVisits || 0;
@@ -55,20 +55,19 @@ async function getAnalyticsData() {
       totalPageviews,
       todayPageviews: dailyData.pageviews || 0,
       weekPageviews: 0, // Can be calculated if needed
-      clicksByComponent: dailyData.clicks || {}, // CHANGED: Now reads from daily, not total
+      clicksByComponent: data.clicks || {},
       referrers: {}, // Simplified
       tiktokPercentage,
     };
     
-    console.log('✅ [Admin Page] Analytics loaded efficiently');
+    console.log('Ô£à [Admin Page] Analytics loaded efficiently');
     console.log('   Total Pageviews:', result.totalPageviews);
     console.log('   Today:', result.todayPageviews);
-    console.log('   Today Clicks:', Object.keys(result.clicksByComponent).length, 'components');
     console.log('   TikTok %:', result.tiktokPercentage);
     
     return result;
   } catch (error: any) {
-    console.error('❌ [Admin Page] Error fetching analytics:', error?.message);
+    console.error('ÔØî [Admin Page] Error fetching analytics:', error?.message);
     console.error('   Error code:', error?.code);
     
     // Return empty data on error

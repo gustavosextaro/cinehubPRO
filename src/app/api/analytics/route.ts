@@ -73,10 +73,22 @@ export async function POST(request: NextRequest) {
       
       // Handle daily document
       if (!dailyDoc.exists) {
-        transaction.set(dailyRef, { pageviews: type === 'pageview' ? 1 : 0 });
+        const initialDaily: any = {
+          pageviews: type === 'pageview' ? 1 : 0,
+          date,
+          clicks: {}
+        };
+        
+        if (type === 'click' && component) {
+          initialDaily.clicks[component] = 1;
+        }
+        
+        transaction.set(dailyRef, initialDaily);
       } else {
         if (type === 'pageview') {
           transaction.update(dailyRef, { pageviews: increment(1) });
+        } else if (type === 'click' && component) {
+          transaction.update(dailyRef, { [`clicks.${component}`]: increment(1) });
         }
       }
 
