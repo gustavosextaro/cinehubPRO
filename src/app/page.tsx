@@ -7,7 +7,7 @@ import { TopPicksSkeleton } from '@/components/top-picks-skeleton';
 import { getTopRatedMovies } from '@/services/letterboxd';
 import { Testimonials, TestimonialCardProps } from '@/components/ui/twitter-testimonial-cards';
 import { AppHeader } from '@/components/app-header';
-import { SpreadsheetModal } from '@/components/spreadsheet-modal';
+
 import { ShimmerButton } from '@/components/ui/shimmer-button';
 import { MicroExpander } from '@/components/ui/micro-expander';
 import { Instagram, MessageCircle } from 'lucide-react';
@@ -64,7 +64,22 @@ export default async function Home() {
         <AppHeader />
 
         <section className="flex flex-col gap-4 animate-fade-in-up">
-          <SpreadsheetModal />
+          <Card className="overflow-hidden bg-card/80 shadow-lg backdrop-blur-sm text-center">
+            <CardHeader>
+              <CardTitle>{config.cards.spreadsheet.title}</CardTitle>
+              <CardDescription>{config.cards.spreadsheet.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TrackedLink 
+                href={config.links.spreadsheet}
+                trackingId="abrir-planilha"
+                buttonText={config.cards.spreadsheet.buttonText}
+              />
+            </CardContent>
+            <CardFooter className="flex justify-center">
+              <p className="text-xs text-muted-foreground">{config.cards.spreadsheet.note}</p>
+            </CardFooter>
+          </Card>
           <Card className="overflow-hidden bg-card/80 shadow-lg backdrop-blur-sm text-center">
             <CardHeader>
               <CardTitle>{config.cards.letterboxd.title}</CardTitle>
