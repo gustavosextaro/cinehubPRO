@@ -22,8 +22,8 @@ export const config = {
 
   cards: {
     spreadsheet: {
-      title: "Meu streaming com +2.000 filmes",
-      description: "O CineHub é o último streaming que você vai precisar assinar na sua vida!",
+      title: "Meu Streaming",
+      description: "O CineHub é o último streaming que você vai precisar assinar na sua vida! Catálogo com +2.000 filmes!",
       buttonText: "Acessar Streaming",
       note: "Atualizado frequentemente (10 filmes por semana)",
     },
