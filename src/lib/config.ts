@@ -5,7 +5,7 @@ export const config = {
   bio: "Apaixonado por cinema.",
   
   links: {
-    spreadsheet: "https://streamingcinehub.vercel.app/",
+    spreadsheet: "https://www.cinehubpro.com/",
     payment_monthly: "https://pay.hub.la/h01wOlP6z0RH8KLSrf6N",
     payment_yearly: "https://pay.hub.la/hwYNDJGovajWZ0mXqGTk",
     letterboxd: "https://letterboxd.com/ghust4_/",
